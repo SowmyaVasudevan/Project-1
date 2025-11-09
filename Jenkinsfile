@@ -18,8 +18,8 @@ pipeline {
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
           credentialsId: 'aws-jenkins-creds',
-          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+          accessKeyVariable: 'test-useer-501',
+          secretKeyVariable: 'iSX{8]FF'
         ]]) {
           sh '''
             aws configure set default.region ${REGION}
