@@ -18,7 +18,7 @@ pipeline {
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
           credentialsId: 'aws-jenkins-creds',
-          accessKeyVariable: 'test-useer-501',
+          accessKeyVariable: 'test-user-501',
           secretKeyVariable: 'iSX{8]FF'
         ]]) {
           sh '''
