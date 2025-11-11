@@ -20,7 +20,7 @@ pipeline {
                         aws configure set default.region us-east-1
                         
                         echo "Deploying static site to S3..."
-                        aws s3 sync build/ s3://app1-payments-prod-example2.com --delete --acl public-read
+                        aws s3 sync build/ s3://app1-payments-prod-example2.com --delete
                     '''
                 }
             }
