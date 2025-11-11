@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-1'    
-        S3_BUCKET = 'app1-payments-prod-example2.com'   
+        AWS_DEFAULT_REGION = 'us-east-1'
     }
 
     stages {
@@ -13,22 +12,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Build React App') {
-            steps {
-                sh 'npm run build'
-            }
-        }
-
         stage('Deploy to S3') {
             steps {
-                withAWS(credentials: 'aws-s3-deploy', region: "${AWS_REGION}") {
-                    sh 'aws s3 sync build/ s3://${S3_BUCKET} --delete --acl public-read'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-s3-deploy']]) {
+                    sh '''
+                        echo "Setting AWS region..."
+                        aws configure set default.region us-east-1
+                        
+                        echo "Deploying static site to S3..."
+                        aws s3 sync build/ s3://app1-payments-prod-example2.com --delete --acl public-read
+                    '''
                 }
             }
         }
@@ -36,10 +29,10 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful! Your app is live on S3.'
+            echo "Deployment successful! Static website uploaded to S3."
         }
         failure {
-            echo 'Deployment failed. Check AWS credentials or S3 bucket permissions.'
+            echo "Deployment failed. Check AWS credentials, bucket policy, or folder path."
         }
     }
 }
