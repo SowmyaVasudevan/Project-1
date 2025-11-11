@@ -1,33 +1,45 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    BUCKET = "my-react-static-site"   // 🪣 Replace with your actual S3 bucket name
-    REGION = "us-east-1"              // 🗺️ Replace with your AWS region
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'main', url: 'https://github.com/SowmyaVasudevan/Project-1.git'
-      }
+    environment {
+        AWS_REGION = 'us-east-1'    
+        S3_BUCKET = 'app1-payments-prod-example2.com'   
     }
 
-    stage('Deploy to S3') {
-      steps {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: 'aws-jenkins-creds',
-          accessKeyVariable: 'test-user-501',
-          secretKeyVariable: 'iSX{8]FF'
-        ]]) {
-          sh '''
-            aws configure set default.region ${REGION}
-            aws s3 sync build/ s3://${BUCKET} --delete --acl public-read
-            aws s3 website s3://${BUCKET} --index-document index.html --error-document index.html
-          '''
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/SowmyaVasudevan/Project-1.git'
+            }
         }
-      }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build React App') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy to S3') {
+            steps {
+                withAWS(credentials: 'aws-s3-deploy', region: "${AWS_REGION}") {
+                    sh 'aws s3 sync build/ s3://${S3_BUCKET} --delete --acl public-read'
+                }
+            }
+        }
     }
-  }
+
+    post {
+        success {
+            echo 'Deployment successful! Your app is live on S3.'
+        }
+        failure {
+            echo 'Deployment failed. Check AWS credentials or S3 bucket permissions.'
+        }
+    }
 }
